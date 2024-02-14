@@ -21,16 +21,7 @@
 Ⅱ. 原理
 ================
 
-USTC 的幻灯片更详尽地阐述牛顿插值法.
-
-.. raw:: html
-
-    <iframe
-        src = "http://staff.ustc.edu.cn/~rui/ppt/num/num-interpolation-newton.html"
-        title = "iframe Example 1"
-        width = "640"
-        height = "300"
-    ></iframe>
+USTC 的幻灯片（http://staff.ustc.edu.cn/~rui/ppt/num/num-interpolation-newton.html）更详尽地阐述牛顿插值法.
 
 已知一系列从小到大排序（自变量排序而非因变量）互不相同的 :math:`n+1` 个节点：
 
