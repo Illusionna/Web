@@ -3,9 +3,16 @@ Jarvis 版本
 |
 
 
+Jarvis-v1.1.2 —— 2024/02/18 23:30:22
+''''''''''''''''''''''''''''''''''''''''''''
+本地局域功能增加 HTTP 共享传输函数, 封装工具 HTTP_Server.exe 点击下载压缩包.
+
+.. centered:: :download:`<Download HTTP_Server.exe> <./attachments/局域传输工具.tar.gz>`
+
+
 
 Jarvis-v1.1.1 —— 2024/01/15 17:53:08
-''''''''''''''''''''''''''''''''''''''''''''
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 增加 TCP/IP 族 POP3 协议 :math:`QQ` 邮件及其附件接收下载功能.
 
 .. centered:: :download:`<Download QQ_Email_Receiver.tar.gz> <./attachments/QQ_Email_Receiver.tar.gz>`
