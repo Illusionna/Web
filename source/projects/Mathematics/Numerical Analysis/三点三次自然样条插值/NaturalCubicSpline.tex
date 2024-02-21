@@ -1,0 +1,279 @@
+% % % XeLatex Compiler. % % %
+% כל המקיים נפש אחת מעלין עליו כאילו קיים עולם מלא
+\documentclass[oneside,UTF8]{article}
+% ----------------------------------------
+% ----------------------------------------
+% ----------------------------------------
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage[heading=true]{ctex}
+\usepackage{multicol}
+\usepackage{datetime}
+\usepackage[fontsize=12pt]{fontsize}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{marvosym}
+\usepackage{
+    amsmath,
+    amssymb,
+    mathrsfs
+}
+\usepackage{caption}
+\usepackage{bm}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{
+    booktabs,
+    diagbox,
+    multirow
+}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{lettrine}
+\usepackage{lipsum}
+\usepackage{cjhebrew}
+\usepackage{tikz}
+% ----------------------------------------
+% ----------------------------------------
+% ----------------------------------------
+\linespread{1.5}
+\geometry{
+    a4paper,
+    left = 3.18cm,
+    right = 3.18cm,
+    top = 2.54cm,
+    bottom = 2.5cm
+}
+% ----------------------------------------
+\lstset{
+    extendedchars=false,
+	columns = flexible,
+	breaklines,
+	showstringspaces = false,
+	basicstyle = \normalsize,
+	numbers = left,
+	numberstyle = \tiny, 
+	keywordstyle = \color{ blue!70},
+	commentstyle = \color{red!50!green!50!blue!50}, 
+	frame = shadowbox, 
+	rulesepcolor = \color{ red!20!green!20!blue!20},
+	xleftmargin=2em,xrightmargin=2em, aboveskip=1em,belowskip=1em,
+	framexleftmargin=2em,framexrightmargin=2em,
+	language = C
+}
+% ----------------------------------------
+\hypersetup{
+	colorlinks=true,
+	linkcolor=cyan,
+	% linkcolor=black,
+	filecolor=blue,      
+	% urlcolor=red,
+	citecolor=cyan,
+}
+% ----------------------------------------
+\captionsetup[table]{labelfont={bf},labelformat={default},font={bf,normalsize},labelsep=space,name={Table}}
+\captionsetup[figure]{labelfont={bf},labelformat={default},font={bf,normalsize},labelsep=default,name={Figure}}
+% ----------------------------------------
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\numberwithin{equation}{section}
+% ----------------------------------------
+\CTEXsetup[name={,.},number={\Roman{section}}]{section}
+\CTEXsetup[format={\Large\bfseries}]{section}
+% ----------------------------------------
+\renewcommand\contentsname{\hfill Contents \hfill}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+\newcommand*{\ttiny}{\fontsize{3pt}{3.4}\selectfont}
+\newcommand*{\rightup}{\textsuperscript}
+\newcommand*{\ucite}[1]{\textsuperscript{\cite{#1}}}
+\renewcommand{\headrule}{\hbox to \headwidth{\color{red!20!green!20!blue!20} \leaders \hrule height \headrulewidth \hfill}}
+% ----------------------------------------
+\newcommand*{\purple}{\color{red!200!green!20!blue!20}}
+\newcommand*{\gray}{\color[rgb]{0.5 0.5 0.5}}
+\newcommand*{\red}{\color[rgb]{1 0 0}}
+\newcommand*{\shallowRed}{\color[rgb]{1 0.2 0.5}}
+\newcommand*{\shallowBlue}{\color[rgb]{0 0.98 0.93}}
+\newcommand*{\shallowYellow}{\color[rgb]{1 0.9 0.6}}
+\definecolor{shallowRed}{rgb}{1 0.2 0.5}
+\definecolor{shallowGreen}{rgb}{0.88 0.93 0.85}
+\definecolor{shallowYellow}{rgb}{1 0.9 0.6}
+\definecolor{shallowBlue}{rgb}{0 0.98 0.93}
+% ----------------------------------------
+% ----------------------------------------
+% ----------------------------------------
+\title{求解样条插值小区间上三次多项式系数算法}
+\author{$\rm Illusionna^{\href{https://Illusionna.readthedocs.io/}{\textrm{\Letter}}}$}
+\date{\tt\small\xxivtime,\ \today}
+% ----------------------------------------
+% ----------------------------------------
+% ----------------------------------------
+\begin{document}
+% ----------------------------------------
+\maketitle
+
+\vspace*{-15em}
+
+\begin{tikzpicture}
+    \node at (15.5,0){
+        \shallowRed\huge\href{
+            https://github.com/Illusionna/Illusion
+        }{$\bm\aleph$}
+    };
+    \draw [white] (0,0) -- (0,0);
+\end{tikzpicture}
+
+\setcounter{page}{1}
+\pagenumbering{arabic}
+\fancyhead[L]{\purple\rightmark}
+\fancyhead[R]{}
+\fancyhead[C]{}
+\fancyfoot[C]{\normalsize--\ \thepage\ --}
+\thispagestyle{fancy}
+
+\vspace*{12em}
+
+\begin{spacing}{1.5}
+    \tableofcontents
+\end{spacing}    
+% ----------------------------------------
+% ----------------------------------------
+% ----------------------------------------
+\pagestyle{fancy}
+% ----------------------------------------
+% ----------------------------------------
+% ----------------------------------------
+\section{\songti 源}
+
+算法出自于这本书：Burden, Annette and Burden, Richard and Faires, J. Numerical Analysis, 9th ed. (2010).
+
+样条插值原理见下面网页，网址太长了，笔者拆开后注意某些文件夹名称中含空格，如果依然搜不到，直接搜主页，然后自行找找.
+
+https://Illusionna.readthedocs.io/zh/latest/projects/
+
+Mathematics/Numerical Analysis/三点三次自然样条插值/Spline.html
+
+主页：https://Illusionna.readthedocs.io
+
+以下所有算法符号以及代码按照网页原理中统一.
+
+
+
+\section{\songti 算法}
+
+Input: $\bm{\vec{x}}=(x_0,x_1,x_2,\ldots,x_n)$, $\bm{\vec{y}}=(y_0,y_1,y_2,\ldots,y_n)$, 点列按照自变量从小到大已经排序好了.
+
+Output: $\forall k,\ a_k,b_k,c_k,d_k$.
+\[ \forall x\in[x_{k-1},x_k],\ \ s_k(x)=a_k+b_kx+c_kx^2+d_kx^3,\ \ k=1,2,\ldots,n \]
+
+\textbf{Step 1:} 计算步长并存储在步长数组里.
+\[ {\rm for}\ k,\ {\rm stepArray}_{k}=\bm{\vec{x}}_{k+1}-\bm{\vec{x}}_{k} \]
+
+
+\textbf{Step 2:} 计算 $\alpha$ 并存在 $\alpha{\rm Array}$ 数组里.
+\[ {\rm for}\ k,\ \alpha{\rm Array}_{k}=\dfrac{3}{{\rm stepArray}_k}\times(\bm{\vec{y}}_{k+1}-\bm{\vec{y}}_k)-\dfrac{3}{{\rm stepArray}_{k-1}}\times(\bm{\vec{y}}_{k}-\bm{\vec{y}}_{k-1}) \]
+
+\textbf{Step 3:} 给 $l{\rm Array},\mu{\rm Array},z{\rm Array}$ 数组首索引元素设置初值.
+\[ l{\rm Array}_0=1,\ \ \mu{\rm Array}_0=0,\ \ z{\rm Array}_0=0 \]
+
+\textbf{Step 4:} 对 $l{\rm Array},\mu{\rm Array},z{\rm Array}$ 数组更新.
+\[ {\rm for}\ k,\ l{\rm Array}_k=2(\bm{\vec{x}}_{k+1}-\bm{\vec{x}}_{k-1})-{\rm stepArray}_{k-1}\times\mu{\rm Array}_{k-1} \]
+\[ \mu{\rm Array}_k=\dfrac{{\rm stepArray}_k}{l{\rm Array}_k} \]
+\[ z{\rm Array}_k=\dfrac{\alpha{\rm Array}_{k}-{\rm stepArray}_{k-1}\times z{\rm Array}_{k-1}}{l{\rm Array}_k} \]
+
+\textbf{Step 5:} 再引入 $c{\rm Array}$ 数组并给尾索引赋值.
+\[ l{\rm Array}_{n+1}=1,\ \ z{\rm Array}_{n+1}=0,\ \ c{\rm Array}_{n+1}=0 \]
+
+\textbf{Step 6:} 再引入 $b{\rm Array},d{\rm Array}$ 数组并计算多项式各次项系数.
+\[ {\rm for}\ t=n,n-1,\ldots,0 \]
+\[ c{\rm Array}_{t}=z{\rm Array}_t-\mu{\rm Array}_t\times c{\rm Array}_{t+1} \]
+\[ b{\rm Array}_t=\dfrac{\bm{\vec{y}}_{t+1}-\bm{\vec{y}}_{t}}{{\rm stepArray}_t}-\dfrac{{\rm stepArray}_t(c{\rm Array}_{t+1}+2\times c{\rm Array}_t)}{3} \]
+\[ d{\rm Array}_t=\dfrac{c{\rm Array}_{t+1}-c{\rm Array}_t}{3\times {\rm stepArray}_t} \]
+
+\textbf{Step 7:} 最后打印 $\bm{\vec{y}},\ b{\rm Array},\ c{\rm Array},\ d{\rm Array}$.
+
+
+
+
+
+
+\section{\songti C 代码}
+
+
+\begin{lstlisting}
+/*
+System --> Linux & gcc8.1.0
+File ----> NaturalCubicSpline.c
+Author --> Illusionna
+Create --> 2024/2/21 22:16:30
+'''
+-*- Encoding: UTF-8 -*-
+*/
+
+
+# include <stdio.h>
+
+int main(){
+    printf("\033[H\033[J");
+    // ********************************************************
+    double X[] = {3, 4.5, 7, 9};
+    double Y[] = {2.5, 1, 2.5, 0.5};
+    // ********************************************************
+    int i, j;
+    int lengthX = sizeof(X) / sizeof(X[0]);
+    int lengthY = sizeof(Y) / sizeof(Y[0]);
+    if (lengthX == lengthY){
+        int n = lengthX - 1;
+        double stepArray[n], alphaArray[n], lArray[n+1], muArray[n+1], zArray[n+1], cArray[n+1], bArray[n], dArray[n];
+        // Step 1.
+        for (i=0; i<n; ++i){
+            stepArray[i] = X[i+1] - X[i];
+        }
+        // Step 2.
+        for (i=1; i<n; ++i){
+            alphaArray[i] = (3 * (Y[i+1] - Y[i]) / stepArray[i]) - (3 * (Y[i] - Y[i-1]) / stepArray[i-1]);
+        }
+        // Step 3.
+        lArray[0] = 1;
+        muArray[0] = 0;
+        zArray[0] = 0;
+        // Step 4.
+        for (i=1; i<n; ++i){
+            lArray[i] = 2 * (X[i+1] - X[i-1]) - stepArray[i-1] * muArray[i-1];
+            muArray[i] = stepArray[i] / lArray[i];
+            zArray[i] = (alphaArray[i] - stepArray[i-1] * zArray[i-1]) / lArray[i];
+        }
+        // Step 5.
+        lArray[n] = 1;
+        zArray[n] = 0;
+        cArray[n] = 0;
+        // Step 6.
+        for (j=n-1; j>=0; --j){
+            cArray[j] = zArray[j] - muArray[j] * cArray[j+1];
+            bArray[j] = ((Y[j+1] - Y[j]) / stepArray[j]) - (stepArray[j] * (cArray[j+1] + 2 * cArray[j]) / 3);
+            dArray[j] = (cArray[j+1] - cArray[j]) / (3 * stepArray[j]);
+        }
+        // Information.
+        printf("The coefficients of each interval cubic polynomial:\n");
+        printf("%2s %8s %8s %8s %8s\n", "k", "ak", "bk", "ck", "dk");
+        for (i=0; i<n; ++i){
+            printf("%2d %9.5f %8.5f %9.5f %9.5f\n", i+1, Y[i], bArray[i], cArray[i], dArray[i]);
+        }
+    }
+    else{
+        // Warning...
+        printf("\033[31mError\033[0m: length of X is\033[31m %d\033[0m, but length of Y is\033[31m %d\033[0m.\n", lengthX, lengthY);
+        printf("\033[33mCheck array!\033[0m");
+    }
+    return 0;
+}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+\end{document}
